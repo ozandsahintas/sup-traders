@@ -1,0 +1,6 @@
+@sup_traders_HostAddress = http://localhost:5245
+
+POST {{sup_traders_HostAddress}}/api/exchange/buy
+Accept: application/json
+
+###
