@@ -1,7 +1,13 @@
-﻿namespace sup_traders
+﻿using sup_traders.Business.Models;
+
+namespace sup_traders
 {
     public sealed class GameManager
     {
+
+        public readonly List<User> Users = [];
+        public readonly Dictionary<string, Share> Shares = [];
+
         public GameManager() { }
         private static GameManager? _instance;
 
@@ -13,9 +19,19 @@
             }
             return _instance;
         }
-        public string Test()
+        public bool RegisterShare(Share s)
         {
-            return "Hey";
+            if (!Shares.ContainsKey(s.code))
+            {
+                Shares.Add(s.code, s);
+                return true;
+            }
+            return false;
+        }
+
+        public void RegisterUser(User u)
+        {
+            Users.Add(u);
         }
     }
 }
