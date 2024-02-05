@@ -29,9 +29,10 @@ namespace sup_traders
             return false;
         }
 
-        public void RegisterUser(User u)
+        public bool RegisterUser(User u)
         {
             Users.Add(u);
+            return true;
         }
     }
 }

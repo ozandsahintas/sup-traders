@@ -12,8 +12,11 @@ namespace sup_traders
 
             builder.Services.AddSingleton<GameManager>();
             builder.Services.AddSingleton<ConnectionHelper>();
+
             builder.Services.AddScoped<IExchangeRepository, ExchangeRepository>();
             builder.Services.AddScoped<IExchangeAccesor, ExchangeAccesor>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

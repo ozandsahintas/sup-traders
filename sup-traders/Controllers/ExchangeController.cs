@@ -10,7 +10,6 @@ namespace sup_traders.Controllers
     {
         private readonly ILogger<ExchangeController> _logger = logger;
         private readonly IExchangeRepository _exchangeRepository = exchangeRepository;
-        private static readonly GameManager gm = GameManager.GetInstance();
 
         [HttpPost]
         public void Buy()
@@ -34,13 +33,6 @@ namespace sup_traders.Controllers
         public Return<Share> RegisterShare([FromBody] Share s)
         {
             return _exchangeRepository.RegisterShare(s);
-        }
-
-        [HttpPost]
-        public void RegisterUser()
-        {
-            gm.RegisterUser(new Business.Models.User());
-            return;
         }
     }
 }
