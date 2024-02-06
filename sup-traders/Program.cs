@@ -1,3 +1,4 @@
+using Microsoft.OpenApi.Models;
 using sup_traders.Access;
 using sup_traders.Business.Helpers;
 using sup_traders.Business.Repositories;
@@ -20,7 +21,11 @@ namespace sup_traders
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.EnableAnnotations();
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SupTradersAPI", Version = "v1" });
+            });
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())

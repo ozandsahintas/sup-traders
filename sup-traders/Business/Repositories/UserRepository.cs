@@ -9,7 +9,8 @@ namespace sup_traders.Business.Repositories
     {
         public Return<User> RegisterUser(User u);
         public Return<User> GetUser(int id);
-        public Return<bool> UpdateUserBalance(int id, float amount);
+        public Return<bool> UpdateUserBalance(int id, float amount, OrgType orgType);
+        public Return<List<User>> LoadUsers();
     }
 
     public class UserRepository : IUserRepository
@@ -83,18 +84,18 @@ namespace sup_traders.Business.Repositories
             };
         }
 
-        public Return<bool> UpdateUserBalance(int id, float amount)
+        public Return<bool> UpdateUserBalance(int id, float amount, OrgType orgType)
         {
             var u = GetUser(id) ?? null;
 
             if (u != null && u.Data != null)
             {
-                if (u.Data.UpdateBalance(amount, OrgType.DEPOSIT))
+                if (u.Data.UpdateBalance(amount, orgType))
                 {
                     return new Return<bool>() 
                     {
                         Data = _userAccessor.UpdateUserBalance(id, u.Data.balance),
-                        Message = $"{u.Data.name}, deposit, {amount}, new balance: {u.Data.balance}",
+                        Message = $"{u.Data.name}, {orgType}, {amount}, new balance: {u.Data.balance}",
                     };
                 }
             }
@@ -103,6 +104,30 @@ namespace sup_traders.Business.Repositories
             {
                 Data = false,
                 Message = u?.Message ?? "",
+            };
+        }
+
+        public Return<List<User>> LoadUsers()
+        {
+            var msg = string.Empty;
+            var users = _userAccessor.LoadUsers();
+
+            if (users == null)
+            {
+                msg = "There is no user registered!";
+            }
+            else
+            {
+                foreach (var u in users)
+                {
+                    _gm.RegisterUser(u);
+                }
+            }
+
+            return new Return<List<User>>()
+            {
+                Message = msg,
+                Data = users,
             };
         }
     }

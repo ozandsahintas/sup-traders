@@ -10,6 +10,7 @@ namespace sup_traders.Access
         public bool RegisterUser(User u);
         public User? GetUser(int id);
         public bool UpdateUserBalance(int id, float balance);
+        public List<User> LoadUsers();
     }
 
     public class UserAccessor : IUserAccessor
@@ -77,6 +78,14 @@ namespace sup_traders.Access
             }
 
             return true;
+        }
+
+        public List<User> LoadUsers()
+        {
+            var query = "SELECT * FROM Users";
+            var connection = _connectionHelper.CreateSqlConnection();
+            var users = connection.Query<User>(query);
+            return users.ToList();
         }
     }
 }
