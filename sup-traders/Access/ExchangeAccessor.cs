@@ -12,12 +12,10 @@ namespace sup_traders.Access
 
     public class ExchangeAccesor : IExchangeAccesor
     {
-        private readonly GameManager _gm;
         private readonly ConnectionHelper _connectionHelper;
 
-        public ExchangeAccesor(GameManager gm, ConnectionHelper connectionHelper)
+        public ExchangeAccesor(ConnectionHelper connectionHelper)
         {
-            _gm = gm;
             _connectionHelper = connectionHelper;
         }
 

@@ -14,12 +14,10 @@ namespace sup_traders.Access
 
     public class UserAccessor : IUserAccessor
     {
-        private readonly GameManager _gm;
         private readonly ConnectionHelper _connectionHelper;
 
-        public UserAccessor(GameManager gm, ConnectionHelper connectionHelper)
+        public UserAccessor(ConnectionHelper connectionHelper)
         {
-            _gm = gm;
             _connectionHelper = connectionHelper;
         }
 
