@@ -9,20 +9,14 @@ namespace sup_traders.Business.Repositories
     {
         public Return<User> RegisterUser(User u);
         public Return<User> GetUser(int id);
-        public Return<bool> UpdateUserBalance(int id, float amount, OrgType orgType);
+        public bool UpdateUserBalance(int id, decimal amount, OrgType orgType, decimal price = 1);
         public Return<List<User>> LoadUsers();
     }
 
-    public class UserRepository : IUserRepository
+    public class UserRepository(GameManager gm, IUserAccessor userAccessor) : IUserRepository
     {
-        private readonly GameManager _gm;
-        private readonly IUserAccessor _userAccessor;
-
-        public UserRepository(GameManager gm, IUserAccessor userAccessor)
-        {
-            _gm = gm;
-            _userAccessor = userAccessor;
-        }
+        private readonly GameManager _gm = gm;
+        private readonly IUserAccessor _userAccessor = userAccessor;
 
         public Return<User> RegisterUser(User u)
         {
@@ -52,7 +46,6 @@ namespace sup_traders.Business.Repositories
                 Message = "User cannot be created!",
             };
         }
-
         public Return<User> GetUser(int id)
         {
             var user = _gm.Users.FirstOrDefault(item => item.id == id);
@@ -83,30 +76,10 @@ namespace sup_traders.Business.Repositories
                 Message = "User not found!",
             };
         }
-
-        public Return<bool> UpdateUserBalance(int id, float amount, OrgType orgType)
+        public bool UpdateUserBalance(int id, decimal amount, OrgType orgType, decimal price = 1)
         {
-            var u = GetUser(id) ?? null;
-
-            if (u != null && u.Data != null)
-            {
-                if (u.Data.UpdateBalance(amount, orgType))
-                {
-                    return new Return<bool>() 
-                    {
-                        Data = _userAccessor.UpdateUserBalance(id, u.Data.balance),
-                        Message = $"{u.Data.name}, {orgType}, {amount}, new balance: {u.Data.balance}",
-                    };
-                }
-            }
-
-            return new Return<bool>()
-            {
-                Data = false,
-                Message = u?.Message ?? "",
-            };
+            return _userAccessor.UpdateUserBalance(id, amount,orgType,price);
         }
-
         public Return<List<User>> LoadUsers()
         {
             var msg = string.Empty;

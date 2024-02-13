@@ -4,6 +4,6 @@
     {
         public string code { get; set; } = string.Empty;
         public int count { get; set; }
-        public float price { get; set; }
+        public decimal price { get; set; }
     }
 }

@@ -18,6 +18,8 @@ namespace sup_traders
             builder.Services.AddScoped<IExchangeAccesor, ExchangeAccesor>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserAccessor, UserAccessor>();
+            builder.Services.AddScoped<IShareRepository, ShareRepository>();
+            builder.Services.AddScoped<IShareAccessor, ShareAccessor>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

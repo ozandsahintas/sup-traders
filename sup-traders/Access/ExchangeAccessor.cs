@@ -6,28 +6,37 @@ namespace sup_traders.Access
 {
     public interface IExchangeAccesor
     {
-        public bool RegisterShare(Share s);
-        public List<Share> LoadShares();
+        public bool RegisterExchange(Exchange e);
     }
 
-    public class ExchangeAccesor : IExchangeAccesor
+    public class ExchangeAccesor(ConnectionHelper connectionHelper) : IExchangeAccesor
     {
-        private readonly ConnectionHelper _connectionHelper;
+        private readonly ConnectionHelper _connectionHelper = connectionHelper;
 
-        public ExchangeAccesor(ConnectionHelper connectionHelper)
+        public bool RegisterExchange(Exchange e)
         {
-            _connectionHelper = connectionHelper;
-        }
+            var query = "DECLARE @sa int " +
+                        "SELECT @sa = [shareAmount] FROM Exchanges WHERE shareCode = @sc AND userId = @uid " +
+                        "IF(@sa IS NOT NULL) BEGIN " +
+                            "IF(@sa + @amount = 0) BEGIN " +
+                                "DELETE FROM Exchanges WHERE shareCode = @sc AND userId = @uid " +
+                            "END " +
+                            "ELSE BEGIN " +
+                                "UPDATE Exchanges " +
+                                "SET shareAmount = shareAmount + @amount " +
+                                "WHERE shareCode = @sc AND userId = @uid " +
+                            "END " +
+                        "END " +
+                        "ELSE BEGIN " +
+                            "INSERT INTO Exchanges (shareCode, userId, shareAmount) " +
+                            "VALUES (@sc , @uid, @amount) " +
+                        "END";
 
-        public bool RegisterShare(Share s)
-        {
-            var query = "INSERT INTO Shares (code, count, price) " +
-            "VALUES (@code, @count, @price)";
 
             var parameters = new DynamicParameters();
-            parameters.Add("code", s.code);
-            parameters.Add("count", s.count);
-            parameters.Add("price", Double.Round(s.price, 2));
+            parameters.Add("sc", e.shareCode);
+            parameters.Add("uid", e.userId);
+            parameters.Add("amount", e.shareAmount);
 
             using var connection = _connectionHelper.CreateSqlConnection();
             try
@@ -40,14 +49,6 @@ namespace sup_traders.Access
             }
 
             return true;
-        }
-
-        public List<Share> LoadShares()
-        {
-            var query = "SELECT * FROM Shares";
-            var connection = _connectionHelper.CreateSqlConnection();
-            var shares = connection.Query<Share>(query);
-            return shares.ToList();
         }
     }
 }

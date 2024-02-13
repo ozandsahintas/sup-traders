@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using sup_traders.Business.Models;
 using sup_traders.Business.Repositories;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace sup_traders.Controllers
 {
@@ -11,28 +12,20 @@ namespace sup_traders.Controllers
         private readonly ILogger<ExchangeController> _logger = logger;
         private readonly IExchangeRepository _exchangeRepository = exchangeRepository;
 
+
+        [SwaggerOperation(Summary = "Buy share.")]
         [HttpPost]
-        public void Buy()
+        public Return<bool> Buy([FromBody]Exchange e)
         {
-            return;
+            return _exchangeRepository.TradeExchange(e, OrgType.BUY);
         }
 
-        [HttpPost]
-        public void Sell()
-        {
-            return;
-        }
 
-        [HttpGet]
-        public Return<List<Share>> LoadShares()
-        {
-            return _exchangeRepository.LoadShares();
-        }
-
+        [SwaggerOperation(Summary = "Sell share.")]
         [HttpPost]
-        public Return<Share> RegisterShare([FromBody] Share s)
+        public Return<bool> Sell([FromBody]Exchange e)
         {
-            return _exchangeRepository.RegisterShare(s);
+            return _exchangeRepository.TradeExchange(e, OrgType.SELL);
         }
     }
 }

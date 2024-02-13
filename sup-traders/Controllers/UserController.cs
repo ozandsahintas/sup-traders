@@ -12,7 +12,7 @@ namespace sup_traders.Controllers
         private readonly ILogger<UserController> _logger = logger;
         private readonly IUserRepository _userRepository = userRepository;
 
-        [SwaggerOperation(Summary = "Register a user at runtime.")]
+        [SwaggerOperation(Summary = "Register a random user at runtime.")]
         [HttpPost]
         public Return<User> RegisterUser()
         {
@@ -28,17 +28,16 @@ namespace sup_traders.Controllers
 
         [SwaggerOperation(Summary = "User deposit.")]
         [HttpPost]
-        public Return<bool> Deposit(Balance b)
+        public bool Deposit(Balance b)
         {
             return _userRepository.UpdateUserBalance(b.id, b.amount, OrgType.DEPOSIT);
         }
 
         [SwaggerOperation(Summary = "User withdraw.")]
         [HttpPost]
-        public Return<bool> Withdraw(Balance b)
+        public bool Withdraw(Balance b)
         {
             return _userRepository.UpdateUserBalance(b.id, b.amount, OrgType.WITHDRAW);
-
         }
     }
 }

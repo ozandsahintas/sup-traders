@@ -7,69 +7,46 @@ namespace sup_traders.Business.Repositories
 {
     public interface IExchangeRepository
     {
-        public Return<Share> RegisterShare(Share s);
-        public Return<List<Share>> LoadShares();
+        public Return<bool> TradeExchange(Exchange e, OrgType t);
     }
 
-    public class ExchangeRepository : IExchangeRepository
+    public class ExchangeRepository(IExchangeAccesor exchangeAccessor,
+                                    IShareAccessor shareAccessor,
+                                    IUserAccessor userAccessor) : IExchangeRepository
     {
-        private readonly GameManager _gm;
-        private readonly IExchangeAccesor _exchangeAccessor;
+        private readonly IExchangeAccesor _exchangeAccessor = exchangeAccessor;
+        private readonly IShareAccessor _shareAccessor = shareAccessor;
+        private readonly IUserAccessor _userAccessor = userAccessor;
 
-        public ExchangeRepository(GameManager gm, IExchangeAccesor exchangeAccesor)
+        public Return<bool> TradeExchange(Exchange e, OrgType t)
         {
-            _gm = gm;
-            _exchangeAccessor = exchangeAccesor;
-        }
 
-        public Return<Share> RegisterShare(Share s)
-        {
-            if (_gm.RegisterShare(s))
+            var sValue = _shareAccessor.GetShareValue(e.shareCode);
+
+            if (sValue > 0)
             {
-                if (_exchangeAccessor.RegisterShare(s))
+                if (_userAccessor.UpdateUserBalance(e.userId, e.shareAmount, t, sValue)) // Checks if user has enough balance and BUY.
                 {
-                    return new Return<Share>()
+                    if (t == OrgType.SELL) { e.shareAmount *= -1; } // If we SELL share, we need to negate our share count.
+
+                    if (_shareAccessor.UpdateShare(e.shareCode, e.shareAmount)) // Handle share amount, also updates share value using triggers.
                     {
-                        Data = s,
-                        Message = "Share created successfully!",
-                    };
-                } else
-                {
-                    return new Return<Share>()
-                    {
-                        Data = s,
-                        Message = "Share code cannot be added! \n Possible reasons: code limit(3)",
-                    };
-                }
-            } else
-            {
-                return new Return<Share>()
-                {
-                    Data = s,
-                    Message = "Share code exists!",
-                };
-            }
-        }
-        public Return<List<Share>> LoadShares()
-        {
-            var msg = string.Empty;
-            var shares = _exchangeAccessor.LoadShares();
-
-            if (shares == null)
-            {
-                msg = "There is no share registered!";
-            } else
-            {
-                foreach (var s in shares)
-                {
-                    _gm.RegisterShare(s);
+                        if (_exchangeAccessor.RegisterExchange(e)) // Upsert Exchange table.
+                        {
+                            return new Return<bool>()
+                            {
+                                Data = true,
+                                Message = $"{e.userId}, {t}, {e.shareAmount}",
+                            };
+                        }
+                    }
                 }
             }
 
-            return new Return<List<Share>>()
+            return new Return<bool>()
             {
-                Message = msg,
-                Data =  shares,
+                Data = false,
+                Message = "",
             };
         }
     }
