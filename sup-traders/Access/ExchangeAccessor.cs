@@ -15,22 +15,28 @@ namespace sup_traders.Access
 
         public bool RegisterExchange(Exchange e)
         {
+            bool result = false;
+
             var query = "DECLARE @sa int " +
                         "SELECT @sa = [shareAmount] FROM Exchanges WHERE shareCode = @sc AND userId = @uid " +
-                        "IF(@sa IS NOT NULL) BEGIN " +
+
+                        "IF(@sa IS NULL AND @amount > 0) BEGIN " +
+                            "INSERT INTO Exchanges (shareCode, userId, shareAmount) VALUES (@sc , @uid, @amount) " +
+                            "SELECT CAST(1 AS BIT) " +
+                        "END " +
+                        "ELSE IF(@sa IS NOT NULL) BEGIN " +
                             "IF(@sa + @amount = 0) BEGIN " +
                                 "DELETE FROM Exchanges WHERE shareCode = @sc AND userId = @uid " +
+                                "SELECT CAST(1 AS BIT) " +
+                            "END " +
+                            "ELSE IF(@sa + @amount > 0) BEGIN " +
+                                "UPDATE Exchanges SET shareAmount = shareAmount + @amount WHERE shareCode = @sc AND userId = @uid " +
+                                "SELECT CAST(1 AS BIT) " +
                             "END " +
                             "ELSE BEGIN " +
-                                "UPDATE Exchanges " +
-                                "SET shareAmount = shareAmount + @amount " +
-                                "WHERE shareCode = @sc AND userId = @uid " +
+                                "SELECT CAST(0 AS BIT) " +
                             "END " +
-                        "END " +
-                        "ELSE BEGIN " +
-                            "INSERT INTO Exchanges (shareCode, userId, shareAmount) " +
-                            "VALUES (@sc , @uid, @amount) " +
-                        "END";
+                        "END ";
 
 
             var parameters = new DynamicParameters();
@@ -41,14 +47,15 @@ namespace sup_traders.Access
             using var connection = _connectionHelper.CreateSqlConnection();
             try
             {
-                connection.Execute(query, parameters);
+                result = connection.ExecuteScalar<bool>(query, parameters);
             }
             catch (Exception)
             {
-                return false;
+                return result;
             }
 
-            return true;
+            return result;
+
         }
     }
 }

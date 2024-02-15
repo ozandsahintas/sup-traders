@@ -9,7 +9,7 @@ namespace sup_traders.Business.Repositories
     public interface IShareRepository
     {
         public Return<Share> RegisterShare(Share s);
-        public decimal GetShareValue(string code);
+        public Share? GetShare(string code);
         public bool UpdateShare(string code, decimal amount);
     }
 
@@ -33,13 +33,13 @@ namespace sup_traders.Business.Repositories
                 return new Return<Share>()
                 {
                     Data = s,
-                    Message = "Share code cannot be added! \n Possible reasons: code limit(3)",
+                    Message = "Share code cannot be added! \n Possible reasons: code limit(3), code exists.",
                 };
             }
         }
-        public decimal GetShareValue(string code)
+        public Share? GetShare(string code)
         {
-            return _shareAccessor.GetShareValue(code);
+            return _shareAccessor.GetShare(code);
         }
         public bool UpdateShare(string code, decimal amount)
         {

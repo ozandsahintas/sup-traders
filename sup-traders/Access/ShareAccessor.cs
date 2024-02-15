@@ -9,7 +9,7 @@ namespace sup_traders.Access
     {
         public bool RegisterShare(Share s);
         public bool UpdateShare(string code, decimal amount);
-        public decimal GetShareValue(string code);
+        public Share? GetShare(string code);
     }
 
     public class ShareAccessor(ConnectionHelper connectionHelper) : IShareAccessor
@@ -30,13 +30,12 @@ namespace sup_traders.Access
             try
             {
                 connection.Execute(query, parameters);
+                return true;
             }
             catch (Exception)
             {
                 return false;
             }
-
-            return true;
         }
         public bool UpdateShare(string code, decimal amount)
         {
@@ -52,17 +51,16 @@ namespace sup_traders.Access
             try
             {
                 connection.Execute(query, parameters);
+                return true;
             }
             catch (Exception)
             {
                 return false;
             }
-
-            return true;
         }
-        public decimal GetShareValue(string code)
+        public Share? GetShare(string code)
         {
-            var query = "SELECT price FROM Shares " +
+            var query = "SELECT price, count, baseCount FROM Shares " +
                         "WHERE code = @code";
 
             var parameters = new DynamicParameters();
@@ -71,12 +69,12 @@ namespace sup_traders.Access
             var connection = _connectionHelper.CreateSqlConnection();
             try
             {
-                var price = connection.QuerySingle<decimal>(query, parameters);
-                return price;
+                var s = connection.Query<Share>(query, parameters).FirstOrDefault() ?? null;
+                return s;
             }
             catch (Exception)
             {
-                return 0;
+                return null;
             }
         }
     }

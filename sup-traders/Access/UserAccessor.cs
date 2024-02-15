@@ -9,7 +9,7 @@ namespace sup_traders.Access
     {
         public bool RegisterUser(User u);
         public User? GetUser(int id);
-        public bool UpdateUserBalance(int id, decimal amount, OrgType orgType, decimal price);
+        public bool UpdateUserBalance(int id, decimal balance);
         public List<User> LoadUsers();
     }
 
@@ -50,64 +50,33 @@ namespace sup_traders.Access
             var u = connection.Query<User>(query, parameters).FirstOrDefault();
             return u;
         }
-        public bool UpdateUserBalance(int id, decimal amount, OrgType orgType, decimal price)
+        public bool UpdateUserBalance(int id, decimal balance)
         {
-            var u = GetUser(id);
-            if(u != null)
+            if (balance >= 0)
             {
-                var nb = CalculateNewBalance(u.balance, amount, orgType, price);
-                if (nb >= 0)
+                var query = "UPDATE Users " +
+                            "SET [balance] = @balance " +
+                            "WHERE [id] = @id; ";
+
+                var parameters = new DynamicParameters();
+                parameters.Add("id", id);
+                parameters.Add("balance", balance);
+
+                var connection = _connectionHelper.CreateSqlConnection();
+                try
                 {
-                    var query = "UPDATE Users " +
-                                "SET [balance] = @balance " +
-                                "WHERE [id] = @id; ";
-
-                    var parameters = new DynamicParameters();
-                    parameters.Add("id", id);
-                    parameters.Add("balance", nb);
-
-                    var connection = _connectionHelper.CreateSqlConnection();
-                    try
-                    {
-                        connection.Execute(query, parameters);
-                        return true;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
+                    connection.Execute(query, parameters);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
                 }
             }
 
             return false;
         }
-        private decimal CalculateNewBalance(decimal balance, decimal amount, OrgType t, decimal price)
-        {
-            switch (t)
-            {
-                case OrgType.DEPOSIT:
-                case OrgType.SELL:
-                    if (amount != 0)
-                    {
-                        balance += amount * price;
-                        return balance;
-                    }
-                    break;
-                case OrgType.WITHDRAW:
-                case OrgType.BUY:
-                    if (balance >= amount * price)
-                    {
-                        balance -= amount * price;
-                        return balance;
-                    }
-                    break;
-                default:
-                    return -1;
-            }
 
-            return -1;
-
-        }
         public List<User> LoadUsers()
         {
             var query = "SELECT * FROM Users";

@@ -20,33 +20,65 @@ namespace sup_traders.Business.Repositories
 
         public Return<bool> TradeExchange(Exchange e, OrgType t)
         {
+            var s = _shareAccessor.GetShare(e.shareCode) ?? null;
+            var u = _userAccessor.GetUser(e.userId) ?? null;
 
-            var sValue = _shareAccessor.GetShareValue(e.shareCode);
+            bool shareCheck = false;
 
-            if (sValue > 0)
+            if (s != null && u != null && s.price > 0)
             {
-                if (_userAccessor.UpdateUserBalance(e.userId, e.shareAmount, t, sValue)) // Checks if user has enough balance and BUY.
-                {
-                    if (t == OrgType.SELL) { e.shareAmount *= -1; } // If we SELL share, we need to negate our share count.
+                var newBalance = u.CalculateNewBalance(u.balance, e.shareAmount, t, s.price);
 
-                    if (_shareAccessor.UpdateShare(e.shareCode, e.shareAmount)) // Handle share amount, also updates share value using triggers.
+                if (t == OrgType.SELL)
+                {
+                    shareCheck = e.shareAmount > 0 && e.shareAmount < s.baseCount;
+                    e.shareAmount *= -1;
+                }
+                if (t == OrgType.BUY)
+                {
+                    shareCheck = e.shareAmount > 0 && e.shareAmount < s.count;
+                }
+
+                if (newBalance >= 0 && shareCheck)
+                {
+                    if (_exchangeAccessor.RegisterExchange(e))
                     {
-                        if (_exchangeAccessor.RegisterExchange(e)) // Upsert Exchange table.
+                        if (_shareAccessor.UpdateShare(e.shareCode, e.shareAmount)) // Handle share amount, also updates share value using triggers.
                         {
-                            return new Return<bool>()
+                            if (_userAccessor.UpdateUserBalance(e.userId, newBalance)) // Upsert Exchange table.
                             {
-                                Data = true,
-                                Message = $"{e.userId}, {t}, {e.shareAmount}",
-                            };
+
+                                return new Return<bool>()
+                                {
+                                    Data = true,
+                                    Message = $"{e.userId}, {t}, {e.shareAmount}",
+                                };
+                            }
                         }
                     }
+                    else
+                    {
+                        return new Return<bool>()
+                        {
+                            Data = false,
+                            Message = "",
+                        };
+                    }
+                }
+                else
+                {
+                    return new Return<bool>()
+                    {
+                        Data = false,
+                        Message = "Not have enough user balance or share amount.",
+                    };
                 }
             }
 
             return new Return<bool>()
             {
                 Data = false,
-                Message = "",
+                Message = "User or share do not exist.",
             };
         }
     }

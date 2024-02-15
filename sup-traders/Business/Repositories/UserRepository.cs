@@ -56,7 +56,19 @@ namespace sup_traders.Business.Repositories
         }
         public bool UpdateUserBalance(int id, decimal amount, OrgType orgType, decimal price = 1)
         {
-            return _userAccessor.UpdateUserBalance(id, amount, orgType, price);
+            var u = GetUser(id).Data;
+            if (u != null)
+            {
+                var nb = u.CalculateNewBalance(u.balance, amount, orgType, price);
+                if(nb >= 0)
+                {
+                    return _userAccessor.UpdateUserBalance(id, nb);
+                }
+
+            }
+
+            return false;
+
         }
     }
 }
