@@ -13,14 +13,6 @@ namespace sup_traders.Controllers
         private readonly IShareRepository _shareRepository = shareRepository;
 
 
-        [SwaggerOperation(Summary = "Load shares from DB.")]
-        [HttpGet]
-        public Return<List<Share>> LoadShares()
-        {
-            return _shareRepository.LoadShares();
-        }
-
-
         [SwaggerOperation(Summary = "Register a share")]
         [HttpPost]
         public Return<Share> RegisterShare([FromBody] Share s)

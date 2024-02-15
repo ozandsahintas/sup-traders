@@ -11,7 +11,6 @@ namespace sup_traders
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSingleton<GameManager>();
             builder.Services.AddSingleton<ConnectionHelper>();
 
             builder.Services.AddScoped<IExchangeRepository, ExchangeRepository>();

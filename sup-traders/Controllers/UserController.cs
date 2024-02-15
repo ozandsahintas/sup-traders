@@ -19,13 +19,6 @@ namespace sup_traders.Controllers
             return _userRepository.RegisterUser(new Business.Models.User { });
         }
 
-        [SwaggerOperation(Summary = "Load users from the DB")]
-        [HttpGet]
-        public Return<List<User>> LoadUsers()
-        {
-            return _userRepository.LoadUsers();
-        }
-
         [SwaggerOperation(Summary = "User deposit.")]
         [HttpPost]
         public bool Deposit(Balance b)

@@ -7,8 +7,8 @@ CREATE TABLE [TradeData].[dbo].[Shares] (
   	[code] [varchar](3) NOT NULL PRIMARY KEY,
 	[count] [int] NOT NULL,
 	[price] DECIMAL(10,2) NOT NULL,
-	[baseCount] [int] NULL,  -- DB Calculations on Update (!!NOT NULL - Insert Trigger will fill).
-	[basePrice] DECIMAL(10,2) NULL,  -- DB Calculations on Update (!!NOT NULL - Insert Trigger will fill).
+	[baseCount] [int] NULL,  -- To calculate updated share value
+	[basePrice] DECIMAL(10,2) NULL,  -- To calculate updated share value
 );
 
 
@@ -26,19 +26,6 @@ CREATE TABLE [TradeData].[dbo].[Exchanges] (
 
 
 -- TRIGGERS
-  CREATE TRIGGER Insert_Price
-  ON [TradeData].[dbo].[Shares]
-  AFTER INSERT 
-  AS
-  BEGIN
-		declare @c varchar(3)
-		SELECT @c = [code] FROM inserted
-		UPDATE [TradeData].[dbo].[Shares] 
-		SET [baseCount] = [count], [basePrice] = [price]
-		WHERE [code] = @c
-  END;
-
-
 
   CREATE TRIGGER Update_Price
   ON [TradeData].[dbo].[Shares]
